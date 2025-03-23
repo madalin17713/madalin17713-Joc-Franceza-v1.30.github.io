@@ -243,53 +243,99 @@ function renderGrid() {
             cell.addEventListener('mouseover', continueSelection);
 
             // Suport pentru touchscreen
-            cell.addEventListener('touchstart', startSelection);
-            cell.addEventListener('touchmove', continueSelection);
+            cell.addEventListener('touchstart', touchSelect);
+            cell.addEventListener('touchmove', touchContinue);
 
             gridElement.appendChild(cell);
         }
     }
 }
 
-// Modifică event handler-ul pentru touchscreen
-function startSelection(e) {
+// Permite selectarea continuă a literelor
+function touchSelect(e) {
+    e.preventDefault();
     let target = e.target;
     if (e.touches) target = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
     if (!target.classList.contains('cell') || !isTimerStarted || isPaused) return;
 
-    resetSelection();
-    
-    const row = parseInt(target.dataset.row);
-    const col = parseInt(target.dataset.col);
-    
-    selectedCells.push({ row, col });
-    target.classList.add('selected');
-    
-    currentWord = grid[row][col];
-    currentWordElement.textContent = currentWord;
+    selectCell(target);
 }
 
-function continueSelection(e) {
-    let target = e.target;
-    if (e.touches) target = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
-    if (!target.classList.contains('cell') || selectedCells.length === 0 || !isTimerStarted || isPaused) return;
+// Permite continuarea selecției
+function touchContinue(e) {
+    e.preventDefault();
+    let target = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+    if (!target.classList.contains('cell') || !isTimerStarted || isPaused) return;
 
+    selectCell(target);
+}
+
+// Funcție pentru selectarea unei celule
+function selectCell(target) {
     const row = parseInt(target.dataset.row);
     const col = parseInt(target.dataset.col);
 
-    const lastCell = selectedCells[selectedCells.length - 1];
-    const rowDiff = Math.abs(row - lastCell.row);
-    const colDiff = Math.abs(col - lastCell.col);
-
-    if ((rowDiff <= 1 && colDiff <= 1) &&
-        !selectedCells.some(cell => cell.row === row && cell.col === col)) {
-
+    // Verifică dacă celula este deja selectată
+    if (!selectedCells.some(cell => cell.row === row && cell.col === col)) {
         selectedCells.push({ row, col });
         target.classList.add('selected');
 
         currentWord += grid[row][col];
         currentWordElement.textContent = currentWord;
     }
+}
+
+// Evenimente pentru mouse
+function startSelection(e) {
+    if (!e.target.classList.contains('cell') || !isTimerStarted || isPaused) return;
+    selectCell(e.target);
+}
+
+function continueSelection(e) {
+    if (!e.target.classList.contains('cell') || selectedCells.length === 0 || !isTimerStarted || isPaused) return;
+    selectCell(e.target);
+}
+
+// Finalizarea selecției și verificarea cuvântului
+function endSelection() {
+    if (selectedCells.length === 0 || !isTimerStarted || isPaused) return;
+
+    if (words.includes(currentWord) && !foundWords.includes(currentWord)) {
+        foundWords.push(currentWord);
+        score += currentWord.length * 10;
+        scoreElement.textContent = score;
+        renderWordList();
+
+        // Verifică dacă toate cuvintele au fost găsite
+        if (foundWords.length === words.length) {
+            clearInterval(timer);
+            isTimerStarted = false;
+            pauseButton.disabled = true;
+            startTimerButton.disabled = true;
+            setTimeout(() => {
+                alert(`Félicitations! Vous avez trouvé tous les mots! Score final: ${score}`);
+            }, 100);
+        }
+    }
+
+    // Resetează selecția doar dacă cuvântul nu este valid
+    if (!words.includes(currentWord)) {
+        resetSelection();
+    }
+}
+
+// Resetează selecția
+function resetSelection() {
+    selectedCells.forEach(cell => {
+        const cellElement = document.querySelector(`.cell[data-row="${cell.row}"][data-col="${cell.col}"]`);
+        if (cellElement) {
+            cellElement.classList.remove('selected');
+        }
+    });
+
+    selectedCells = [];
+    currentWord = "";
+    currentWordElement.textContent = "";
 }
 
 window.addEventListener('load', () => {
