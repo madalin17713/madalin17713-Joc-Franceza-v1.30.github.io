@@ -251,6 +251,8 @@ function renderGrid() {
     }
 }
 
+
+
 // Selectează o literă și permite continuarea selecției
 function touchSelect(e) {
     e.preventDefault();
@@ -258,6 +260,7 @@ function touchSelect(e) {
     if (e.touches) target = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
     if (!target.classList.contains('cell') || !isTimerStarted || isPaused) return;
 
+    // Adaugă celula la selecția curentă
     selectCell(target);
 }
 
@@ -267,6 +270,7 @@ function touchContinue(e) {
     let target = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
     if (!target.classList.contains('cell') || !isTimerStarted || isPaused) return;
 
+    // Permite continuarea selecției dacă celula nu a fost deja selectată
     selectCell(target);
 }
 
@@ -275,7 +279,7 @@ function selectCell(target) {
     const row = parseInt(target.dataset.row);
     const col = parseInt(target.dataset.col);
 
-    // Dacă litera nu a fost deja selectată, adaug-o
+    // Dacă litera nu a fost deja selectată, adaug-o la selecție
     if (!selectedCells.some(cell => cell.row === row && cell.col === col)) {
         selectedCells.push({ row, col });
         target.classList.add('selected');
@@ -288,19 +292,49 @@ function selectCell(target) {
 // Selectare prin mouse
 function startSelection(e) {
     if (!e.target.classList.contains('cell') || !isTimerStarted || isPaused) return;
-    selectCell(e.target);
+
+    // Resetare selecție anterioară
+    resetSelection();
+
+    // Adaugă celula la selecția curentă
+    const row = parseInt(e.target.dataset.row);
+    const col = parseInt(e.target.dataset.col);
+
+    selectedCells.push({ row, col });
+    e.target.classList.add('selected');
+
+    currentWord = grid[row][col];
+    currentWordElement.textContent = currentWord;
 }
 
 // Continuare selecție cu mouse-ul
 function continueSelection(e) {
-    if (!e.target.classList.contains('cell') || !isTimerStarted || isPaused) return;
-    selectCell(e.target);
+    if (!e.target.classList.contains('cell') || selectedCells.length === 0 || !isTimerStarted || isPaused) return;
+
+    const row = parseInt(e.target.dataset.row);
+    const col = parseInt(e.target.dataset.col);
+
+    // Verifică dacă celula este adiacentă celei selectate anterior
+    const lastCell = selectedCells[selectedCells.length - 1];
+    const rowDiff = Math.abs(row - lastCell.row);
+    const colDiff = Math.abs(col - lastCell.col);
+
+    if ((rowDiff <= 1 && colDiff <= 1) && // Celula este adiacentă
+        !selectedCells.some(cell => cell.row === row && cell.col === col)) { // Nu a fost deja selectată
+
+        selectedCells.push({ row, col });
+        e.target.classList.add('selected');
+
+        currentWord += grid[row][col];
+        currentWordElement.textContent = currentWord;
+    }
 }
 
 // Finalizare selecție și verificare cuvânt
 function endSelection() {
     if (selectedCells.length === 0 || !isTimerStarted || isPaused) return;
 
+    // Verifică dacă cuvântul selectat este în listă
     if (words.includes(currentWord) && !foundWords.includes(currentWord)) {
         foundWords.push(currentWord);
         score += currentWord.length * 10;
@@ -318,100 +352,11 @@ function endSelection() {
             }, 100);
         }
     }
-}
 
-// NU mai resetează selecția la sfârșitul fiecărei atingeri
-window.addEventListener('load', () => {
-    setupTimerControls();
-    initGame();
-});
-
-// Render the word list
-function renderWordList() {
-    wordListElement.innerHTML = '';
-    
-    for (const word of words) {
-        const wordItem = document.createElement('div');
-        wordItem.className = 'word-item';
-        if (foundWords.includes(word)) {
-            wordItem.classList.add('found');
-        }
-        wordItem.textContent = word;
-        wordListElement.appendChild(wordItem);
-    }
-}
-
-// Start selecting cells
-function startSelection(e) {
-
-    if (!e.target.classList.contains('cell') || !isTimerStarted || isPaused) return;
-    
-    // Reset selection
-    resetSelection();
-    
-    // Add cell to selection
-    const row = parseInt(e.target.dataset.row);
-    const col = parseInt(e.target.dataset.col);
-    
-    selectedCells.push({ row, col });
-    e.target.classList.add('selected');
-    
-    currentWord = grid[row][col];
-    currentWordElement.textContent = currentWord;
-}
-
-// Continue selection
-function continueSelection(e) {
-
-    if (!e.target.classList.contains('cell') || selectedCells.length === 0 || !isTimerStarted || isPaused) return;
-    
-    const row = parseInt(e.target.dataset.row);
-    const col = parseInt(e.target.dataset.col);
-    
-    // Check if cell is adjacent to last selected cell
-    const lastCell = selectedCells[selectedCells.length - 1];
-    const rowDiff = Math.abs(row - lastCell.row);
-    const colDiff = Math.abs(col - lastCell.col);
-    
-    if ((rowDiff <= 1 && colDiff <= 1) && // Adjacent cell
-        !selectedCells.some(cell => cell.row === row && cell.col === col)) { // Not already selected
-        
-        selectedCells.push({ row, col });
-        e.target.classList.add('selected');
-        
-        currentWord += grid[row][col];
-        currentWordElement.textContent = currentWord;
-    }
-}
-
-// End selection
-function endSelection() {
-
-    if (selectedCells.length === 0 || !isTimerStarted || isPaused) return;
-    
-    // Check if word is in the list
-    if (words.includes(currentWord) && !foundWords.includes(currentWord)) {
-        foundWords.push(currentWord);
-        score += currentWord.length * 10;
-        scoreElement.textContent = score;
-        renderWordList();
-        
-        // Check if all words are found
-        if (foundWords.length === words.length) {
-            clearInterval(timer);
-            isTimerStarted = false;
-            pauseButton.disabled = true;
-            startTimerButton.disabled = true;
-            setTimeout(() => {
-                alert(`Félicitations! Vous avez trouvé tous les mots! Score final: ${score}`);
-            }, 100);
-        }
-    }
-    
     resetSelection();
 }
 
-// Reset selection
+// Resetează selecția
 function resetSelection() {
     selectedCells.forEach(cell => {
         const cellElement = document.querySelector(`.cell[data-row="${cell.row}"][data-col="${cell.col}"]`);
@@ -419,7 +364,7 @@ function resetSelection() {
             cellElement.classList.remove('selected');
         }
     });
-    
+
     selectedCells = [];
     currentWord = "";
     currentWordElement.textContent = "";
