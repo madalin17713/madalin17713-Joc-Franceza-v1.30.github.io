@@ -127,7 +127,7 @@ function placeWords() {
         [0, -1],  // left
         [-1, 0],  // up
        // [-1, 1],  // diagonal up-right
-      //  [-1, -1]  // diagonal up-left
+       //  [-1, -1]  // diagonal up-left
     ];
 
     for (const word of words) {
@@ -208,48 +208,94 @@ function renderGrid() {
             cell.dataset.col = j;
             cell.textContent = grid[i][j];
             
-           // Add both mouse and touch events
-           cell.addEventListener('mousedown', startSelection);
-           cell.addEventListener('mouseover', continueSelection);
-           cell.addEventListener('touchstart', handleTouchStart, { passive: false });
-           cell.addEventListener('touchmove', handleTouchMove, { passive: false });
-           cell.addEventListener('touchend', handleTouchEnd, { passive: false });
-           
-           gridElement.appendChild(cell);
+            cell.addEventListener('mousedown', startSelection);
+            cell.addEventListener('mouseover', continueSelection);
+
+            
+            
+            gridElement.appendChild(cell);
         }
     }
     
     document.addEventListener('mouseup', endSelection);
 }
 
-// Handle touch end
-function handleTouchEnd(e) {
-    e.preventDefault();
-    if (!isSelecting || !isTimerStarted || isPaused) return;
+// Verifică dacă este un dispozitiv tactil
+isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+// Event listeners pentru selecția pe touchscreen
+document.addEventListener('touchend', endSelection);
+document.addEventListener('mouseup', endSelection);
+
+function renderGrid() {
+    gridElement.innerHTML = '';
     
-    isSelecting = false;
-    
-    // Check if word is in the list
-    if (words.includes(currentWord) && !foundWords.includes(currentWord)) {
-        foundWords.push(currentWord);
-        score += currentWord.length * 10;
-        scoreElement.textContent = score;
-        renderWordList();
-        
-        // Check if all words are found
-        if (foundWords.length === words.length) {
-            clearInterval(timer);
-            isTimerStarted = false;
-            pauseButton.disabled = true;
-            startTimerButton.disabled = true;
-            setTimeout(() => {
-                alert(`Félicitations! Vous avez trouvé tous les mots! Score final: ${score}`);
-            }, 100);
+    for (let i = 0; i < 20; i++) {
+        for (let j = 0; j < 20; j++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.dataset.row = i;
+            cell.dataset.col = j;
+            cell.textContent = grid[i][j];
+            
+            // Evenimente pentru selecția literelor
+            cell.addEventListener('mousedown', startSelection);
+            cell.addEventListener('mouseover', continueSelection);
+
+            // Suport pentru touchscreen
+            cell.addEventListener('touchstart', startSelection);
+            cell.addEventListener('touchmove', continueSelection);
+
+            gridElement.appendChild(cell);
         }
     }
-    
-    resetSelection();
 }
+
+// Modifică event handler-ul pentru touchscreen
+function startSelection(e) {
+    let target = e.target;
+    if (e.touches) target = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+    if (!target.classList.contains('cell') || !isTimerStarted || isPaused) return;
+
+    resetSelection();
+    
+    const row = parseInt(target.dataset.row);
+    const col = parseInt(target.dataset.col);
+    
+    selectedCells.push({ row, col });
+    target.classList.add('selected');
+    
+    currentWord = grid[row][col];
+    currentWordElement.textContent = currentWord;
+}
+
+function continueSelection(e) {
+    let target = e.target;
+    if (e.touches) target = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+    if (!target.classList.contains('cell') || selectedCells.length === 0 || !isTimerStarted || isPaused) return;
+
+    const row = parseInt(target.dataset.row);
+    const col = parseInt(target.dataset.col);
+
+    const lastCell = selectedCells[selectedCells.length - 1];
+    const rowDiff = Math.abs(row - lastCell.row);
+    const colDiff = Math.abs(col - lastCell.col);
+
+    if ((rowDiff <= 1 && colDiff <= 1) &&
+        !selectedCells.some(cell => cell.row === row && cell.col === col)) {
+
+        selectedCells.push({ row, col });
+        target.classList.add('selected');
+
+        currentWord += grid[row][col];
+        currentWordElement.textContent = currentWord;
+    }
+}
+
+window.addEventListener('load', () => {
+    setupTimerControls();
+    initGame();
+});
 
 // Render the word list
 function renderWordList() {
