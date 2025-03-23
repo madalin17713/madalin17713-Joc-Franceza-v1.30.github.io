@@ -223,7 +223,7 @@ function renderGrid() {
 // Verifică dacă este un dispozitiv tactil
 isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
-// Event listeners pentru selecția pe touchscreen
+// Event listeners pentru touchscreen și mouse
 document.addEventListener('touchend', endSelection);
 document.addEventListener('mouseup', endSelection);
 
@@ -251,7 +251,7 @@ function renderGrid() {
     }
 }
 
-// Permite selectarea continuă a literelor
+// Selectează o literă și permite continuarea selecției
 function touchSelect(e) {
     e.preventDefault();
     let target = e.target;
@@ -261,7 +261,7 @@ function touchSelect(e) {
     selectCell(target);
 }
 
-// Permite continuarea selecției
+// Continuă selecția fără a reseta
 function touchContinue(e) {
     e.preventDefault();
     let target = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
@@ -275,7 +275,7 @@ function selectCell(target) {
     const row = parseInt(target.dataset.row);
     const col = parseInt(target.dataset.col);
 
-    // Verifică dacă celula este deja selectată
+    // Dacă litera nu a fost deja selectată, adaug-o
     if (!selectedCells.some(cell => cell.row === row && cell.col === col)) {
         selectedCells.push({ row, col });
         target.classList.add('selected');
@@ -285,18 +285,19 @@ function selectCell(target) {
     }
 }
 
-// Evenimente pentru mouse
+// Selectare prin mouse
 function startSelection(e) {
     if (!e.target.classList.contains('cell') || !isTimerStarted || isPaused) return;
     selectCell(e.target);
 }
 
+// Continuare selecție cu mouse-ul
 function continueSelection(e) {
-    if (!e.target.classList.contains('cell') || selectedCells.length === 0 || !isTimerStarted || isPaused) return;
+    if (!e.target.classList.contains('cell') || !isTimerStarted || isPaused) return;
     selectCell(e.target);
 }
 
-// Finalizarea selecției și verificarea cuvântului
+// Finalizare selecție și verificare cuvânt
 function endSelection() {
     if (selectedCells.length === 0 || !isTimerStarted || isPaused) return;
 
@@ -317,27 +318,9 @@ function endSelection() {
             }, 100);
         }
     }
-
-    // Resetează selecția doar dacă cuvântul nu este valid
-    if (!words.includes(currentWord)) {
-        resetSelection();
-    }
 }
 
-// Resetează selecția
-function resetSelection() {
-    selectedCells.forEach(cell => {
-        const cellElement = document.querySelector(`.cell[data-row="${cell.row}"][data-col="${cell.col}"]`);
-        if (cellElement) {
-            cellElement.classList.remove('selected');
-        }
-    });
-
-    selectedCells = [];
-    currentWord = "";
-    currentWordElement.textContent = "";
-}
-
+// NU mai resetează selecția la sfârșitul fiecărei atingeri
 window.addEventListener('load', () => {
     setupTimerControls();
     initGame();
