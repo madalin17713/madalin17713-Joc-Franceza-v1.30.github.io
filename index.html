@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Search Explorer - Français v2</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Word Search Explorer - Français</h1>
+    
+    <div class="controls">
+        <div class="difficulty">
+            <label for="difficulty">Catégories: </label>
+            <select id="difficulty">
+                <option value="pasiuni">Verbes</option>
+                <option value="materii" selected>Matières</option>
+                <option value="numere">Nombres</option>
+                <option value="tari">Pays</option>
+                <option value="monumente">Monuments</option>
+                <option value="actori">Acteurs</option>
+                <option value="incaperi">Débuts</option>
+            </select>
+        </div>
+        <button id="new-game">Nouveau Jeu</button>
+        <div class="timer">Temps: <span id="time">05:00</span></div>
+        <div class="score">Score: <span id="score">0</span></div>
+    </div>
+    
+    <div class="game-container">
+        <div class="current-word" id="current-word"></div>
+        <div class="grid-container" id="grid"></div>
+        <div class="word-list" id="word-list"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
