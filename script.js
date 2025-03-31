@@ -9,18 +9,19 @@ const frenchWordsByDifficulty = {
         "MATHÉMATIQUES", "PHYSIQUE", "CHIMIE", "BIOLOGIE", "HISTOIRE", 
         "GÉOGRAPHIE", "FRANÇAIS", "ANGLAIS", "ESPAGNOL", "ALLEMAND", 
         "INFORMATIQUE", "PHILOSOPHIE", "ÉDUCATION CIVIQUE", "MUSIQUE", "ARTS PLASTIQUES"
-    ],
-    numere: [
+    ]
+};
+    /*numere: [
         "DOUZE", "VINGT-SEPT", "QUARANTE-TROIS", "CINQ", "SOIXANTE-DEUX",
          "QUINZE", "TRENTE-NEUF", "HUIT", "CINQUANTE-QUATRE", "SOIXANTE-DIX",
          "NEUF", "QUATRE-VINGT-CINQ", "TRENTE-DEUX", "ONZE", "QUATRE"
-    ],
-    tari: [
+    ], */
+    /*tari: [
         "FRANCE", "ALLEMAGNE", "ITALIE", "ESPAGNE", "ROYAUME-UNI",
         "JAPON", "CHINE", "INDONÉSIE", "BRÉSIL", "ÉTATS-UNIS",
         "CANADA", "AUSTRALIE", "AFRIQUE DU SUD", "ÉGYPTE", "MEXIQUE"
-    ],
-    monumente: [
+    ],*/
+   /* monumente: [
         "EIFFEL", "TOUR EIFFEL", "TOUR DE PISE", "TOUR DE PISA", "TOUR DE PISA",
         "TOUR DE PISA", "TOUR DE PISA", "TOUR DE PISA", "TOUR DE PISA", "TOUR DE PISA",
         "TOUR DE PISA", "TOUR DE PISA", "TOUR DE PISA", "TOUR DE PISA", "TOUR DE PISA"
@@ -29,13 +30,13 @@ const frenchWordsByDifficulty = {
         "JEAN PAUL BELMONDO", "GERARD DEPARDIEU", "MARION COTILLARD", "AUDREY HEPBURN", "OLIVIER MARCHAL",
         "ISABELLE HUPPERT", "RICHARD BERRY", "CATHERINE DENEUVE", "LOUIS DE FUNÈS", "JULIETTE BINOCHE",
         "PIERRE RICHARD", "FRANÇOIS CLUZET", "VANESSA PARADIS", "JACQUES PERRIN", "NATHALIE BAYE"
-    ],
-    incaperi: [
+    ],*/
+   /* incaperi: [
         "SALLE DE BAIN", "CUISINE", "CHAMBRE", "SALON", "BUREAU", 
         "DRESSING", "WC", "COULOIR", "JARDIN", "CELLIER",
         "GARAGE", "VERANDA", "COMMODE", "SOUS-SOL", "ATELIER"
     ]
-};
+};*/
 
 // French alphabet with frequency weights
 const frenchAlphabet = {
@@ -54,7 +55,7 @@ let words = [];
 let foundWords = [];
 let score = 0;
 let timer;
-let timeLeft = 300; // 5 minutes
+let timeLeft = 600; // 10 minutes
 let isPaused = false;
 let isTimerStarted = false;
 let isTouchDevice = false;
@@ -79,7 +80,7 @@ function initGame() {
     currentWord = "";
     foundWords = [];
     score = 0;
-    timeLeft = 300;
+    timeLeft = 600;
     isPaused = true
     isTimerStarted = false;
     
@@ -369,6 +370,7 @@ function resetSelection() {
     currentWord = "";
     currentWordElement.textContent = "";
 }
+
 
 // Update timer
 function updateTimer() {
